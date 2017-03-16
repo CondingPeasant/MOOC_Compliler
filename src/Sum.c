@@ -104,6 +104,7 @@ struct Stack_t *Stack_Push_new (int i)
 }
 
 // instruction list
+// list stack
 struct List_t
 {
   struct Stack_t *instr;
@@ -121,7 +122,19 @@ struct List_t *List_new (struct Stack_t *instr, struct List_t *next)
 // "printer"
 void List_reverse_print (struct List_t *list)
 {
-  TODO();
+  if (list) {
+    switch(list->instr->kind){
+    case STACK_ADD:
+        printf("add\n");
+      break;
+    case STACK_PUSH:
+        printf("push %d\n", ((struct Exp_Int*)list->instr)->i);
+      break;
+    default:
+      break;
+    }
+    List_reverse_print(list->next);
+  }
 }
 
 //////////////////////////////////////////////////
@@ -141,7 +154,10 @@ void compile (struct Exp_t *exp)
     break;
   }
   case EXP_SUM:{
-    TODO();
+    struct Exp_Sum *p = (struct Exp_Sum *) exp;
+    compile(p->left);
+    compile(p->right);
+    emit (Stack_Add_new());
     break;
   }
   default:
@@ -170,6 +186,7 @@ int main()
   compile (exp);
 
   // print out the generated Stack instructons:
+  printf("\n");
   List_reverse_print (all);
   
   printf("\nCompile finished\n");
