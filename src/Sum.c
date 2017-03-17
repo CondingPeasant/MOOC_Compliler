@@ -140,9 +140,41 @@ void List_reverse_print (struct List_t *list)
 //////////////////////////////////////////////////
 // a compiler from Sum to Stack
 struct List_t *all = 0;
+// a compiler with const folding
+struct List_t *folding = 0;
+
 void emit (struct Stack_t *instr)
 {
   all = List_new (instr, all);
+}
+
+void emit_with_folding (struct Stack_t *instr)
+{
+  if (STACK_ADD == instr->kind) {
+    struct List_t *p = folding;
+    if (p && p->instr && STACK_PUSH == p->instr->kind) {
+      struct List_t *q = p->next;
+      if (q && q->instr && STACK_PUSH == q->instr->kind) {
+        folding = List_new(
+                Stack_Push_new (((struct Stack_Push *)p->instr)->i + ((struct Stack_Push *)q->instr)->i),
+                q->next);
+        free(p);
+        free(q);
+#ifdef DEBUG
+        printf("Folding!\n");
+#endif
+      }
+    } else {
+#ifdef DEBUG
+      printf("instruction error!\n");
+#endif
+    }
+  } else {
+#ifdef DEBUG
+    printf("No folding!\n");
+#endif
+    folding = List_new (instr, folding);
+  }
 }
 
 void compile (struct Exp_t *exp)
@@ -151,6 +183,7 @@ void compile (struct Exp_t *exp)
   case EXP_INT:{
     struct Exp_Int *p = (struct Exp_Int *)exp;
     emit (Stack_Push_new (p->i));
+    emit_with_folding (Stack_Push_new (p->i));
     break;
   }
   case EXP_SUM:{
@@ -158,6 +191,7 @@ void compile (struct Exp_t *exp)
     compile(p->left);
     compile(p->right);
     emit (Stack_Add_new());
+    emit_with_folding (Stack_Add_new());
     break;
   }
   default:
@@ -186,9 +220,12 @@ int main()
   compile (exp);
 
   // print out the generated Stack instructons:
-  printf("\n");
+  printf("\nStack instructions: \n");
   List_reverse_print (all);
   
+  printf("\nStack instructions with const folding: \n");
+  List_reverse_print (folding);
+
   printf("\nCompile finished\n");
   return 0;
 }
