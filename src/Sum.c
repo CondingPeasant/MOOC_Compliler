@@ -150,6 +150,8 @@ void emit (struct Stack_t *instr)
 
 void emit_with_folding (struct Stack_t *instr)
 {
+  // do folding at ADD instruction
+  // pop two const varibles, then push the sum of them.
   if (STACK_ADD == instr->kind) {
     struct List_t *p = folding;
     if (p && p->instr && STACK_PUSH == p->instr->kind) {
