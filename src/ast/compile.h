@@ -37,7 +37,7 @@ struct Stack_Push
   enum Stack_Kind_t kind;
   int i;
 };
-struct Stack_t *Stack_Push_new (int i)
+struct Stack_t *Stack_Push_new (int i);
 
 // instruction list
 // list stack
@@ -51,4 +51,5 @@ struct List_t *List_new (struct Stack_t *instr, struct List_t *next);
 void List_reverse_print (struct List_t *list);
 void emit (struct Stack_t *instr);
 void compile (struct Exp_t *exp);
+struct List_t* getStack();
 #endif
